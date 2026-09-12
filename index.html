@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="DpV2tkKTL8o9OruJvkLNu4">
+<head data-page-node-id="dFGnYLH15jE8SevGDGLJQn">
+<meta charset="UTF-8" data-page-node-id="M73IMRMoBsX10AAde0Ka9L">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="bF8czHNLnhpRxfJmL1z0eA">
+<title>咖啡馆经营模拟 · 创业与运营</title>
+<style>
+  :root{
+    --bg:#f5f5f7; --card:#fff; --ink:#1d1d1f; --sub:#6e6e73; --line:#e3e3e6;
+    --blue:#0071e3; --green:#34c759; --orange:#ff9f0a; --red:#ff3b30; --purple:#af52de;
+    --radius:18px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased;padding-bottom:40px}
+  .topbar{position:sticky;top:0;z-index:20;background:rgba(245,245,247,.85);backdrop-filter:saturate(180%) blur(20px);
+    border-bottom:1px solid var(--line);padding:10px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .topbar h1{font-size:17px;font-weight:650;letter-spacing:-.2px}
+  .stat{font-size:13px;color:var(--sub);font-variant-numeric:tabular-nums}
+  .stat b{color:var(--ink);font-weight:650}
+  .stat b.good{color:var(--green)} .stat b.bad{color:var(--red)}
+  .spacer{flex:1}
+  .btn{border:none;border-radius:999px;padding:8px 16px;font-size:14px;font-weight:600;cursor:pointer;
+    background:var(--blue);color:#fff;transition:.15s}
+  .btn:hover{filter:brightness(1.05)} .btn:active{transform:scale(.97)}
+  .btn.ghost{background:transparent;color:var(--blue);border:1px solid var(--blue)}
+  .btn.soft{background:#ececf0;color:var(--ink)}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .wrap{max-width:1100px;margin:0 auto;padding:18px 20px}
+  .banner{background:linear-gradient(135deg,#fff6e9,#fffaf3);border:1px solid #ffe0b2;border-radius:var(--radius);
+    padding:16px 20px;margin-bottom:18px;font-size:14px}
+  .banner b{color:#c77700}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:860px){.cols{grid-template-columns:1fr}}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+  .panel h2{font-size:17px;font-weight:650;margin-bottom:12px;letter-spacing:-.2px}
+  .field{margin-bottom:16px}
+  .field label{display:flex;justify-content:space-between;font-size:13.5px;color:var(--sub);margin-bottom:6px}
+  .field label b{color:var(--ink);font-weight:650;font-variant-numeric:tabular-nums}
+  input[type=range]{width:100%;accent-color:var(--blue)}
+  .seg{display:flex;gap:8px}
+  .seg button{flex:1;padding:9px 6px;border:1px solid var(--line);background:#fff;border-radius:12px;
+    font-size:13px;cursor:pointer;color:var(--ink);transition:.15s}
+  .seg button.on{border-color:var(--blue);background:#f0f7ff;color:var(--blue);font-weight:650}
+  .seg small{display:block;color:var(--sub);font-size:11px;font-weight:400}
+  .hint{font-size:12px;color:var(--sub);margin-top:5px}
+  .hint.warn{color:var(--orange)}
+  .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .acts .btn{font-size:13px;padding:7px 12px}
+  input[type=number]{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:12px;font-size:15px;
+    font-variant-numeric:tabular-nums;outline:none}
+  input[type=number]:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,113,227,.15)}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  td{padding:6px 0;border-bottom:1px solid var(--line)}
+  td:last-child{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+  tr.net td{border-bottom:none;font-size:15px;padding-top:10px}
+  .pos{color:var(--green)} .neg{color:var(--red)}
+  .kv{display:flex;justify-content:space-between;font-size:13.5px;padding:5px 0;border-bottom:1px solid var(--line)}
+  .kv b{font-variant-numeric:tabular-nums}
+  canvas{width:100%;height:220px;display:block}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--sub);margin-top:8px}
+  .legend i{display:inline-block;width:12px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle}
+  .event{background:#fff8e6;border:1px solid #ffe0b2;border-radius:12px;padding:10px 14px;font-size:13.5px;margin-bottom:12px}
+  .event.bad{background:#fff0ef;border-color:#ffd5d2}
+  .event.good{background:#eefaf1;border-color:#cdeed8}
+  details{margin-top:14px} summary{cursor:pointer;font-weight:600;font-size:14.5px;color:var(--blue)}
+  details p{font-size:13.5px;margin:8px 0} details ul{margin:6px 0 6px 20px;font-size:13.5px}
+  .overlay{position:fixed;inset:0;background:rgba(245,245,247,.97);backdrop-filter:blur(8px);z-index:50;
+    display:none;align-items:center;justify-content:center;padding:20px;overflow:auto}
+  .modal{background:#fff;border:1px solid var(--line);border-radius:24px;max-width:680px;width:100%;padding:32px;
+    box-shadow:0 20px 60px rgba(0,0,0,.12)}
+  .modal h2{font-size:24px;font-weight:700;letter-spacing:-.5px}
+  .grade{font-size:32px;font-weight:800;margin:8px 0}
+  .best{font-size:12.5px;color:var(--sub);margin-top:4px}
+  .tag{display:inline-block;font-size:11.5px;padding:2px 8px;border-radius:999px;background:#eef5ff;color:var(--blue);font-weight:600}
+</style>
+</head>
+<body data-page-node-id="nwI6MissRMKXf7ZujShquo">
+
+<div class="topbar" data-page-node-id="WKT3xwB5DJnlK5doSSvXz1">
+  <h1 data-page-node-id="7amsV11rFMsEZkAb19OvyD">☕ 咖啡馆经营模拟</h1>
+  <div class="stat" data-page-node-id="zAEOHfE7VPnNFFkGgIZHNO">第 <b id="s-week" data-page-node-id="ELAx6YRulpNxc8zjVEwfGO">1</b>/12 周</div>
+  <div class="stat" data-page-node-id="DrYYsFBuLsqYtayjCHoVTS">现金 <b id="s-cash" data-page-node-id="WwMtU9yxpIWCtv5Z0QuBBe">¥20,000</b></div>
+  <div class="stat" data-page-node-id="CzhbUFDODGjdhSQC5KBey0">口碑 <b id="s-rep" data-page-node-id="Syi2ed2D4rm1h3Lx8YpgRx">50</b></div>
+  <div class="stat" data-page-node-id="0AGVEbwprYPIS6HkP2QdIe">库存 <b id="s-inv" data-page-node-id="DfWezgVjIKkjTDvxtBujnE">0</b></div>
+  <div class="stat" data-page-node-id="lldzcMU3cPP6KMEIc3OG9i">员工 <b id="s-staff" data-page-node-id="dGc4WWc6DMmytczah76FzR">2</b></div>
+  <div class="stat" data-page-node-id="knAGXcDBOT6mIBloD5kfmI">贷款 <b id="s-loan" data-page-node-id="hVFfRW7haSIt0CDTXgc4df">¥0</b></div>
+  <div class="stat" data-page-node-id="nf16fNAj3UvHMerROcLw86">最佳 <b id="s-best" data-page-node-id="KdNnBYdSfEpyDSbvPIOy3p">—</b></div>
+  <div class="spacer" data-page-node-id="MQ68yfaF8FjNcpa7vOr63O"></div>
+  <button class="btn ghost" id="btn-guide">📖 新手指南</button>
+  <button class="btn ghost" id="btn-restart" data-page-node-id="H2VjYIBE9e4qGH255ImfiR">重开</button>
+</div>
+
+<div class="wrap" data-page-node-id="wp6gsoKmyoUoQQO4tC8F1q">
+  <div class="banner" data-page-node-id="UfvaxlJfpX4WyMrSR7nDJT">
+    <b data-page-node-id="MnOYsmhgHMzEvPdAtZjryy">你的任务：</b>用 <b data-page-node-id="rRytgXWfzapqCOpv1rf9fp">¥20,000</b> 启动资金经营一家咖啡馆，撑过 <b data-page-node-id="8GEorI8FXEPlrLfoKWuV0z">12 周</b>并把<b data-page-node-id="UZp3tGLS6ZFNJCdikNIXJT">期末净值</b>做到最高。
+    每周你要决定 <b data-page-node-id="cZawrVbHYFDN5An6F5xLGA">定价 · 咖啡豆档位 · 采购量 · 员工数 · 营销投入</b>；现金流断了就倒闭。
+    <br data-page-node-id="10bWWcr8bWP1cGEdTq0X8u"><b data-page-node-id="y2LaOdtq7FzUnSFYWsaYPZ">核心取舍：</b>便宜能走量但人力是阶梯成本；贵能做毛利但口碑会掉；品质投入靠口碑复利，5 周后才见效。
+  </div>
+
+  <div class="cols" data-page-node-id="Gs7lxhSEBr1yaHkYuU1JK6">
+    <!-- 决策 -->
+    <div class="panel" data-page-node-id="gs2rWL62uF0Y7MSfWM3wmR">
+      <h2 data-page-node-id="X5EacENBmVz6bAwfcQ5Esk">本周决策</h2>
+
+      <div class="field" data-page-node-id="wCZAEeESGgEFmv9rC82hC0">
+        <label data-page-node-id="BHTX5bN4qSDIE002bo6gmf">单杯定价 <b data-page-node-id="el8ZSSkxLxS7aHdQmCoCBf">¥<span id="v-price" data-page-node-id="dDOIdMt4Rgd8eCHFFjdPmm">18</span></b></label>
+        <input type="range" id="i-price" min="8" max="40" step="1" value="18" data-page-node-id="b6EUY8Abd0QA3Hun3SW69n">
+        <div class="hint" id="h-price" data-page-node-id="40h9lU8rNBwShNFLNnPiVm"></div>
+      </div>
+
+      <div class="field" data-page-node-id="1yB939aId5RqDB8EwsVx3y">
+        <label data-page-node-id="gdG2wQh5jQX9AaR7CTzv41">咖啡豆档位 <b data-page-node-id="uwtoWk0r2ArGGfligwG4d3"><span id="v-tier" data-page-node-id="AxAb9NZanRTHLIC2UFNxN6">精品</span></b></label>
+        <div class="seg" id="i-tier" data-page-node-id="i4oHsS8RQFGbb7yV1vXSaR">
+          <button data-t="0" data-page-node-id="WVBtw7GcTyvCFs5SYu4f47">普通<small data-page-node-id="RcCAOqA0ZEATWhp4IbUtQp">¥3/杯 · 满意−8</small></button>
+          <button data-t="1" class="on" data-page-node-id="yK7PIiS61ImASF08BJDSHH">精品<small data-page-node-id="SVoddjZ7au73fhnMeKN4Pk">¥5/杯 · 满意+2</small></button>
+          <button data-t="2" data-page-node-id="rbGjhabABoaTnFRSx7alNI">顶级<small data-page-node-id="UsXv78QGlNooeM3OGseqQU">¥8/杯 · 满意+10</small></button>
+        </div>
+      </div>
+
+      <div class="field" data-page-node-id="nDp8Irb9r3NiqllC4fa5vJ">
+        <label data-page-node-id="Rl28WbDK6doFVIIbltv7Cd">采购量（杯份） <b data-page-node-id="EITB9I14OrhLkK0dbi3uTv"><span id="v-buy" data-page-node-id="611ASQNogJJMXY0YQx2fEW">0</span></b></label>
+        <input type="number" id="i-buy" min="0" max="1600" step="10" value="0" data-page-node-id="K8JNtm27C2kA8s01yoNXFb">
+        <div class="hint" id="h-buy" data-page-node-id="mEd83Aic8gHUfooZK2Xlsh"></div>
+      </div>
+
+      <div class="field" data-page-node-id="BH2wgR2WIUagtj7PFhEM9F">
+        <label data-page-node-id="ulKinM4aomjOaUkHOx2fkd">员工数 <b data-page-node-id="HX6bp6fkjRXWWHZWp1PzO0"><span id="v-staff" data-page-node-id="gwQYDDnxfL7wtGvwXGTWcG">2</span> 人 · 产能 <span id="v-cap" data-page-node-id="WKRREIxeAjzAsavCaYE1s2">600</span> 杯</b></label>
+        <input type="range" id="i-staff" min="1" max="5" step="1" value="2" data-page-node-id="J6zZxLfVWXknT1xphwpQzw">
+        <div class="hint" id="h-staff" data-page-node-id="9HbJgDXXioE2kYoXdntoke"></div>
+      </div>
+
+      <div class="field" data-page-node-id="rlyExyG1aKXSWUPoaGjlrg">
+        <label data-page-node-id="Mg5uJhVknyFhBNtThrGYAU">营销投入 <b data-page-node-id="gM2PAB5WEA1rQCqt5kansy">¥<span id="v-mkt" data-page-node-id="nc6ZzkvU4Zlg70C8P1VVnB">500</span></b></label>
+        <input type="range" id="i-mkt" min="0" max="3000" step="100" value="500" data-page-node-id="8gTJcBEMAZbglSGo0oYECz">
+        <div class="hint" id="h-mkt" data-page-node-id="AxFQTZkH75AtbYEJWVkQwe"></div>
+      </div>
+
+      <div class="acts" data-page-node-id="ydVwGrk5dEckaf1UB8GvHa">
+        <button class="btn soft" id="btn-equip" data-page-node-id="yMBXhHkipwe1kGCufCQoG6">⚙️ 升级设备 ¥8,000</button>
+        <button class="btn soft" id="btn-deco" data-page-node-id="H09DEZl2Lh5s7ehg67mac1">🛋️ 升级装修 ¥6,000</button>
+        <button class="btn soft" id="btn-borrow" data-page-node-id="ZZEZF0K1hAtZywbtqbGyX6">💰 贷款 ¥10,000</button>
+        <button class="btn soft" id="btn-repay" data-page-node-id="rroDJB14FoCUD4kYCzXlJW">↩️ 还款 ¥10,000</button>
+      </div>
+      <div class="hint" id="h-acts" data-page-node-id="cBUQHbhxFr6M2T8yI4YWyj"></div>
+
+      <button class="btn" id="btn-next" style="width:100%;margin-top:18px;padding:12px;font-size:15px" data-page-node-id="pXG8nh2AGfkvhZXXlkiIzj">结算本周 →</button>
+    </div>
+
+    <!-- 经营结果 -->
+    <div data-page-node-id="cQv2oFVtSZN6EaN4QHQ06i">
+      <div class="panel" data-page-node-id="rkdSZSDbraErQtgjyki0CO">
+        <h2 data-page-node-id="CnxitxAWsfIMiQCBn7vvbR">上周经营结果</h2>
+        <div id="ev-box" data-page-node-id="FEP8FBX9MGwC6gTswCyFcv"></div>
+        <div class="kv" data-page-node-id="2CWpG7LLuYZO07YCMndZEB"><span data-page-node-id="T5jEiul1iBbwXx96CiroaR">客流需求 / 实际成交</span><b id="r-dem" data-page-node-id="UajpmrR7M6vGkNboveWSHA">— / —</b></div>
+        <div class="kv" data-page-node-id="fIdxhhphVHEjxxF33tRz3m"><span data-page-node-id="Egcg4XMFtaNDs6BwMKsCuK">营业收入</span><b id="r-rev" data-page-node-id="BKRoFSTNmN6bBq8cn1XcId">—</b></div>
+        <div class="kv" data-page-node-id="bHTHBHw2XxzEmOHu6mnbpt"><span data-page-node-id="coMTpz8d4eEvIHv2HjlCd9">原料成本</span><b id="r-cogs" class="neg" data-page-node-id="XRSnk24eJrHUyx4zqcIbUZ">—</b></div>
+        <div class="kv" data-page-node-id="WS3eBjCweBtBwFlpLXF75q"><span data-page-node-id="zGfL7uXMTus1LvVlYPXfna">人力成本</span><b id="r-labor" class="neg" data-page-node-id="u30UMVhujsX2fo5X0E3y8T">—</b></div>
+        <div class="kv" data-page-node-id="VEawZQ0TkzqDgWGNFGHlgz"><span data-page-node-id="I7G6R6LzwAsa64f8AjGXmx">租金</span><b id="r-rent" class="neg" data-page-node-id="RgqF2zkmhawBplO380OUGw">—</b></div>
+        <div class="kv" data-page-node-id="0lxAEb0273Btg33o13LucY"><span data-page-node-id="ungki5rJWSgept5wexl4DP">营销费用</span><b id="r-mkt" class="neg" data-page-node-id="mCa4btHmsgwEKjIOTrAaAH">—</b></div>
+        <div class="kv" data-page-node-id="o339WvUFYEQCN1de4MNdIR"><span data-page-node-id="FLvujp7wd6jLP1LypNskAT">利息 / 损耗</span><b id="r-misc" class="neg" data-page-node-id="bfKxiAkptDq0ZEqwwXgvIF">—</b></div>
+        <div class="kv" data-page-node-id="Ws2TYBtRiSew6EvD06IprY"><span data-page-node-id="nY7qYYESBeAhlOAYLKFwPa">本周净利</span><b id="r-net" data-page-node-id="54HkcsVxpsYEtFAcVaa1oK">—</b></div>
+        <div class="kv" data-page-node-id="RTIWXNK4NEbkDL0fVmPsiX"><span data-page-node-id="0S1m2qpCvzoRwZfScoaK2K">顾客满意度 / 口碑</span><b id="r-sat" data-page-node-id="AatxvIBiTJsSEyOPlbjqEL">— / —</b></div>
+        <div class="kv" data-page-node-id="XCu3yQPC8B7E4yJtQoBRYf"><span data-page-node-id="re7VonBTkP5if6dxRWvKws">库存损耗</span><b id="r-spoil" data-page-node-id="VzIBQWyQuTSYzqVCbnzkHv">—</b></div>
+      </div>
+
+      <div class="panel" style="margin-top:18px" data-page-node-id="QVsNUpoQSlHPzeYMp14GUE">
+        <h2 data-page-node-id="dqgrqNxi0ltkBnoTNUWSUH">经营趋势</h2>
+        <canvas id="chart" data-page-node-id="L4D6hyND8uOADYbKzp2B7D"></canvas>
+        <div class="legend" data-page-node-id="eJEkM2ZFba0bKzw45nh4Uv">
+          <span data-page-node-id="FcFDxPeKqRI4DbElsBObi3"><i style="background:#0071e3" data-page-node-id="lFr8w0vyuQNZjW4GoJyoqP"></i>现金 <b id="lg-cash" data-page-node-id="MgMRJlp3WszpbtOlk6E12l">—</b></span>
+          <span data-page-node-id="AB2kPgkBXeNCrhiQUkgqPS"><i style="background:#34c759" data-page-node-id="s4x2pzpEmaKq0PiU5KoA8i"></i>销量 <b id="lg-sold" data-page-node-id="TF1bHEAWww2y3YPBjcihnE">—</b></span>
+          <span data-page-node-id="eVLyzG2HTcq0nDDP27cXUK"><i style="background:#af52de" data-page-node-id="GFDtratdF1plqaAl1qlqEV"></i>口碑 <b id="lg-rep" data-page-node-id="m2wLQljq3neF6p2BrsDJWL">—</b></span>
+        </div>
+        <details data-page-node-id="NEs665t5cHBp0VH0t6TT7G">
+          <summary data-page-node-id="NpeA7mOE7fPcNFxFKfoLbc">📚 模型与数值说明（每条数字都有 rationale）</summary>
+          <p data-page-node-id="BUHRiA4cY5WwTCz8hhEkLl"><b data-page-node-id="KBIxm5ffCY1Dj37IUUapMt">需求模型：</b>需求 = 700 × 价格因子 × 豆档因子 × 口碑因子 × 营销因子 × 装修因子 × 事件因子</p>
+          <ul data-page-node-id="cGkgmUuo2LGVKyHuMuFynW">
+            <li data-page-node-id="G6CF0VDnoBQPyBlcUCw85p"><b data-page-node-id="Xx6Lrk70710nS7yZCpUXSi">基准客流 700 杯/周</b>：参考价¥18、口碑50、精品豆、无营销时的周需求，约 100 杯/天（社区咖啡馆量级）。</li>
+            <li data-page-node-id="74uTniQ2VBJJL8ixbhUPal"><b data-page-node-id="VVZU05CiLKgQ2tGa5UEvOr">价格因子 = (18/价格)^1.5，钳制 0.25–2.2</b>：现制饮品需求价格弹性经验值 1.2–1.8，取 1.5；钳制防止极端定价让模型崩坏。</li>
+            <li data-page-node-id="nZXzrDzObHIFA9nY4t1869"><b data-page-node-id="OdP5Ux2PUk9n6JKBqzFoYt">豆档 客流 0.92/1.00/1.08、满意度 −8/+2/+10</b>：品质对客流影响小、对满意度影响大——品质是<em data-page-node-id="BgRXHy9b3XAGA4yO0wypVC">长期复利</em>而非即时按钮。</li>
+            <li data-page-node-id="woOYAghZwiBdjC8MCnOMiC"><b data-page-node-id="SL0dyVAft8QuaK7fGCN6pb">口碑因子 = 0.6 + 口碑/100×0.8</b>：口碑50→1.0；100→1.4；0→0.6。</li>
+            <li data-page-node-id="pUhwTdavXjlXopUiScVUk6"><b data-page-node-id="oqMnnuHEDYTETRmWH0qyHe">营销因子 = 1 + 0.28×(1−e^(−mkt/1200))</b>：递减收益，首 ¥1200 换约 +18% 客流，之后边际骤降，防止无脑砸钱。</li>
+          </ul>
+          <p data-page-node-id="CsHYkIqzGWDXVGzakcJlUB"><b data-page-node-id="RN6XeuGnbtD3TTaHJ2DmHA">成本结构：</b>原料 ¥3/¥5/¥8 每杯（占售价 17%–44%）· 员工 ¥1,200/人/周，产能 300 杯/人（<em data-page-node-id="NhlFDhFYkIrfZqdXGymkDb">人力是阶梯成本，是核心取舍</em>）· 租金 ¥3,000/周（固定成本，逼你做量）· 库存每周损耗 5%（惩罚过度采购）。</p>
+          <p data-page-node-id="3VKuGWtyC9GsGEc6XWM0P8"><b data-page-node-id="ZTbQY2Mpxij0Cie93nK34u">口碑更新：</b>口碑 += (满意度−50)×0.2；满意度 = 50 + 豆档 + 性价比(±15) − 排队惩罚12。约 5 周才能把口碑从 50 推到 65。</p>
+          <p data-page-node-id="Gr13NlwE8vRbKEYdZY7v0G"><b data-page-node-id="sj9CcqS3UAiFbvTsS2VClB">经济系统 Source / Sink：</b></p>
+          <ul data-page-node-id="0WiCNtXA1i2TVFnsDjETYC">
+            <li data-page-node-id="Xc4TKUzpPmZPvtzE9Nofph"><b data-page-node-id="OYaQYnmwzoDHFMi64NESWK">Source（现金流入）</b>：营业收入、贷款（周转用）。</li>
+            <li data-page-node-id="jAtTjUSDmqWEgDTGFgpfAx"><b data-page-node-id="9zd7wP2WzRy9fdQBKEO2oa">Sink（现金流出）</b>：原料、人力、租金、营销、设备/装修投资、贷款利息、库存损耗。</li>
+            <li data-page-node-id="u8yHBLR5ZkeELFiDAnP2FR"><b data-page-node-id="L4nimstm4cyAqCaCJkjLdx">投资是必要的 Sink</b>：现金囤积会躺赢，所以设备（产能+20%/人）与装修（口碑+8、客流+5%）既是增长手段，也是后期现金出口。</li>
+            <li data-page-node-id="ez7ODp8w55JF96nk8jHelZ"><b data-page-node-id="Rlq4KmERJfaPzzA5TYi8ii">两个反馈环</b>：口碑↑→客流↑→收入↑（正循环）；排队/低质→满意度↓→口碑↓→客流↓（死亡螺旋）。</li>
+          </ul>
+        </details>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay" data-page-node-id="X7Z2gGIqHyFoJhGNwsnlMp">
+  <div class="modal" data-page-node-id="r4RX4zs2E1aOQS6B6zenyE">
+    <h2 id="end-title" data-page-node-id="uLQUY7bjWBOthCvrbgrN0p">经营结束</h2>
+    <div class="grade" id="end-grade" data-page-node-id="JgHPyhWlSJwwECrGW9bx5P">—</div>
+    <div class="kv" data-page-node-id="3f1nyZphcV8KTGixKXcCVW"><span data-page-node-id="NlLCYUgtsYg1LGB0vbiA9B">期末净值</span><b id="end-nw" data-page-node-id="dgNCPQrLAGjjFv5rO0EjjF">¥0</b></div>
+    <div class="kv" data-page-node-id="JX8TduxS0o4qltqm5c3E3n"><span data-page-node-id="4XSy4LEqX17ICkiqoeP1IS">现金 / 贷款</span><b id="end-cash" data-page-node-id="hHciEuYHTPlvMmmdww24iQ">¥0 / ¥0</b></div>
+    <div class="kv" data-page-node-id="K82MFVlKMkWzfQZYAGWsgf"><span data-page-node-id="1yqqpdBYj2f5eyZKrTr15D">投资残值（50%）</span><b id="end-inv2" data-page-node-id="IUSo6l40vE1IzPcPB8Db1O">¥0</b></div>
+    <div class="kv" data-page-node-id="F56enRQaaYku3lwUBiaVfq"><span data-page-node-id="0Plg6fZ4oddRVgEzlZ4Abs">期末口碑</span><b id="end-rep" data-page-node-id="hFXeTG2T6LGj9PBLm2XRIg">0</b></div>
+    <div class="kv" data-page-node-id="YBhaajC5p59GGNEaulVWQ7"><span data-page-node-id="loIZMDdMd1MAsPspi2bDpA">累计销量</span><b id="end-sold" data-page-node-id="Iz00zjD4p0BcxRAntwG5ZI">0</b></div>
+    <div class="kv" data-page-node-id="48gHnI5SbIoCNNFzdc38LU"><span data-page-node-id="XchzDkpOoUo07o1RxQC3TF">历史最佳净值</span><b id="end-best" data-page-node-id="Mfq7HHebwD3iVgEoVY4GR7">¥0</b></div>
+    <p class="best" id="end-note" data-page-node-id="OSdvumeQZsRUs1n2gNUEyX"></p>
+    <div class="acts" style="margin-top:16px" data-page-node-id="Abe0VClFvtlKwg81CSRd6v">
+      <button class="btn" id="btn-again" data-page-node-id="CdpWCqSmAIIqxeFjEr66K0">再来一局</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+// ---------- 常量（每条均有 rationale，见页面内说明） ----------
+const WEEKS=12, START_CASH=20000, START_REP=50;
+const RENT=3000, WAGE=1200, BASE=700, REF=18;
+const BEAN_COST=[3,5,8], BEAN_TR=[0.92,1.0,1.08], BEAN_SAT=[-8,2,10];
+const BEAN_NAME=["普通","精品","顶级"];
+const CAP=300, CAP_STEP=60, SPOIL=0.05, ELA=1.5, MAXPF=2.2;
+const REPA=0.6, REPB=0.8, MKTK=0.28, MKTD=1200, SATK=0.2;
+const EQUIP_COST=8000, DECO_COST=6000, LOAN_UNIT=10000, LOAN_MAX=30000, LOAN_RATE=0.03;
+const BUY_MAX=1600;
+const BEST_KEY="cafe_best_v1";
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const fmt=n=>"¥"+Math.round(n).toLocaleString("zh-CN");
+const $=id=>document.getElementById(id);
+
+let S=null;
+
+function newGame(){
+  S={week:1, cash:START_CASH, rep:START_REP, inv:0, staff:2, equip:0, deco:0,
+     loan:0, lastDemand:BASE, hist:[], over:false,
+     d:{price:18, tier:1, buy:770, staff:2, mkt:500}, log:null,
+     eventMod:1, eventWeeks:0, eventList:[]};
+  const best=Number(localStorage.getItem(BEST_KEY)||0);
+  $("s-best").textContent = best? fmt(best):"—";
+  syncInputs(); render();
+  $("ev-box").innerHTML="";
+  ["r-dem","r-rev","r-cogs","r-labor","r-rent","r-mkt","r-misc","r-net","r-sat","r-spoil"].forEach(id=>$(id).textContent="—");
+  drawChart();
+}
+
+// ---------- 预测（给玩家即时反馈） ----------
+function predict(){
+  const d=S.d;
+  const pf=clamp(Math.pow(REF/d.price,ELA),0.25,MAXPF);
+  const rf=REPA+(S.rep/100)*REPB;
+  const mf=1+MKTK*(1-Math.exp(-d.mkt/MKTD));
+  const df=1+0.05*S.deco;
+  return Math.round(BASE*pf*BEAN_TR[d.tier]*rf*mf*df*S.eventMod);
+}
+
+// ---------- 结算 ----------
+function settle(){
+  const d=S.d;
+  const unit=BEAN_COST[d.tier];
+  // 本周事件的一次性影响（维修费 / 豆价上涨）
+  let extraCost=0, costMult=1;
+  const ev=(S.eventList&&S.eventList.length)?S.eventList[0]:null;
+  if(ev&&ev.extra==="repair") extraCost=2000;
+  if(ev&&ev.extra==="coffee") costMult=1.3;
+  // 采购（不能超过现金）
+  let buy=clamp(d.buy,0,BUY_MAX);
+  const afford=Math.floor(Math.max(0,S.cash)/(unit*costMult));
+  buy=Math.min(buy,afford);
+  const cogs=Math.round(buy*unit*costMult);
+
+  // 需求
+  const pred=predict();
+  const demand=pred;
+  const capacity=S.staff*(CAP+CAP_STEP*S.equip);
+  const sold=Math.min(demand,capacity,S.inv+buy);
+  const lost=Math.max(0,demand-sold);
+
+  // 库存与损耗
+  S.inv=S.inv+buy-sold;
+  const spoiled=Math.round(S.inv*SPOIL); S.inv-=spoiled;
+  const spoilCost=spoiled*unit;
+
+  // 满意度与口碑
+  let sat=50+BEAN_SAT[d.tier]+clamp((REF-d.price)*1.2,-15,15)+(demand>S.staff*(CAP+CAP_STEP*S.equip)?-12:0);
+  sat=clamp(sat,0,100);
+  const repBefore=S.rep;
+  S.rep=clamp(S.rep+(sat-50)*SATK,0,100);
+
+  // 损益
+  const rev=sold*d.price, labor=S.staff*WAGE;
+  const interest=Math.round(S.loan*LOAN_RATE);
+  const profit=rev-cogs-labor-RENT-d.mkt-interest-spoilCost-extraCost;
+  S.cash+=profit;
+
+  S.log={demand,sold,lost,rev,cogs,labor,mkt:d.mkt,interest,spoilCost,extraCost,profit,sat,repBefore,rep:S.rep,spoiled};
+  S.hist.push({week:S.week,cash:S.cash,rep:S.rep,sold:sold});
+  S.lastDemand=demand;
+
+  // 事件（下一周生效）
+  S.eventMod=1; S.eventList=[];
+  if(S.week>1){ /* 已在上次生成 */ }
+  const nextEv=rollEvent();
+  if(nextEv){ S.eventMod=nextEv.mod; S.eventList=[nextEv]; } else { S.eventList=[]; }
+
+  // 结束判定
+  render();
+  if(S.cash<0){ endGame(true); return; }
+  if(S.week>=WEEKS){ endGame(false); return; }
+  S.week++;
+  S.d.buy=Math.round(demand*1.1-S.inv);
+  syncInputs(); render();
+}
+
+function rollEvent(){
+  const r=Math.random();
+  if(r>0.32) return null;
+  const pool=[
+    {t:"☔ 连日阴雨，客流下滑", mod:0.75, good:false},
+    {t:"📱 网红打卡，客流暴涨", mod:1.40, good:true},
+    {t:"🎉 商圈活动，客流上扬", mod:1.25, good:true},
+    {t:"🏪 隔壁新开连锁店抢客", mod:0.90, good:false},
+    {t:"☕ 咖啡豆产地涨价", mod:1.0, good:false, extra:"coffee"},
+    {t:"🔧 咖啡机故障维修", mod:1.0, good:false, extra:"repair"},
+  ];
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
+// ---------- 渲染 ----------
+function syncInputs(){
+  $("i-price").value=S.d.price; $("v-price").textContent=S.d.price;
+  $("i-staff").value=S.staff; $("v-staff").textContent=S.staff;
+  $("i-mkt").value=S.d.mkt; $("v-mkt").textContent=S.d.mkt;
+  $("i-buy").value=Math.max(0,S.d.buy); $("v-buy").textContent=Math.max(0,Math.round(S.d.buy));
+  [...$("i-tier").children].forEach(b=>b.classList.toggle("on", +b.dataset.t===S.d.tier));
+  $("v-tier").textContent=BEAN_NAME[S.d.tier];
+}
+function render(){
+  $("s-week").textContent=S.week;
+  $("s-cash").textContent=fmt(S.cash);
+  const cEl=$("s-cash"); cEl.className = S.cash<5000?"bad":"";
+  $("s-rep").textContent=Math.round(S.rep);
+  $("s-inv").textContent=S.inv;
+  $("s-staff").textContent=S.staff;
+  $("s-loan").textContent=fmt(S.loan);
+  $("v-cap").textContent=S.staff*(CAP+CAP_STEP*S.equip);
+
+  const p=predict();
+  $("h-price").textContent = `预计客流 ${p} 杯　·　毛利 ${fmt(p*S.d.price)}（参考价 ¥18）`;
+  const unit=BEAN_COST[S.d.tier];
+  $("h-buy").innerHTML = `原料成本 ${fmt(Math.max(0,S.d.buy)*unit)}　·　建议 ${Math.max(0,Math.round(S.lastDemand*1.1-S.inv))} 杯（上周需求×1.1−库存）<br>库存每周损耗 5%，囤货会烂在仓库`;
+  const cap=S.staff*(CAP+CAP_STEP*S.equip);
+  $("h-staff").innerHTML = p>cap ? `<span style="color:var(--red)">⚠️ 产能不足：需求 ${p} > 产能 ${cap}，${p-cap} 杯流失且满意度 −12</span>`
+      : `产能充足（需求 ${p} ≤ 产能 ${cap}）　·　人力 ${fmt(S.staff*WAGE)}/周`;
+  const mf=1+MKTK*(1-Math.exp(-S.d.mkt/MKTD));
+  $("h-mkt").textContent = `客流 ×${mf.toFixed(2)}（递减收益）`;
+  $("h-acts").innerHTML = `设备 Lv${S.equip}（产能 ${CAP+CAP_STEP*S.equip}/人）　装修 Lv${S.deco}（客流 +${5*S.deco}%）　·　周息 3%`;
+
+  if(S.log){
+    const L=S.log;
+    $("r-dem").textContent=`${L.demand} / ${L.sold}${L.lost?" （流失 "+L.lost+"）":""}`;
+    $("r-rev").textContent=fmt(L.rev);
+    $("r-cogs").textContent="-"+fmt(L.cogs);
+    $("r-labor").textContent="-"+fmt(L.labor);
+    $("r-rent").textContent="-"+fmt(RENT);
+    $("r-mkt").textContent="-"+fmt(L.mkt);
+    $("r-misc").textContent="-"+fmt(L.interest+L.spoilCost+L.extraCost)+(L.extraCost?"（含事件损失）":"");
+    const n=$("r-net"); n.textContent=(L.profit>=0?"+":"")+fmt(L.profit); n.className=L.profit>=0?"pos":"neg";
+    $("r-sat").textContent=`${Math.round(L.sat)} / ${Math.round(L.rep)}（${L.rep>=L.repBefore?"↑":"↓"}）`;
+    $("r-spoil").textContent=L.spoiled+" 杯";
+    $("lg-cash").textContent=fmt(S.cash); $("lg-sold").textContent=L.sold; $("lg-rep").textContent=Math.round(S.rep);
+  }
+  // 事件提示
+  const box=$("ev-box");
+  if(S.eventList&&S.eventList.length){
+    box.innerHTML=S.eventList.map(e=>
+      `<div class="event ${e.good?'good':'bad'}"><b>本周事件：${e.t}</b>`+
+      (e.extra==='repair'?'　→ 一次性维修费 −¥2,000':'')+
+      (e.extra==='coffee'?'　→ 本周原料成本 +30%':'')+
+      (e.extra?'':'　→ 客流 ×'+e.mod.toFixed(2))+'　<span class="tag">已计入预测</span></div>').join("");
+  } else box.innerHTML="";
+  drawChart();
+}
+
+function drawChart(){
+  const cv=$("chart"), dpr=window.devicePixelRatio||1;
+  const w=cv.clientWidth, h=cv.clientHeight||220;
+  cv.width=w*dpr; cv.height=h*dpr;
+  const ctx=cv.getContext("2d"); ctx.scale(dpr,dpr); ctx.clearRect(0,0,w,h);
+  const H=S.hist;
+  if(!H.length) return;
+  const padL=34,padB=22,padT=10,padR=8;
+  const maxOf=k=>Math.max(1,...H.map(x=>x[k]));
+  const series=[{k:"cash",c:"#0071e3"},{k:"sold",c:"#34c759"},{k:"rep",c:"#af52de"}];
+  ctx.strokeStyle="#ececf0"; ctx.fillStyle="#aeaeb2"; ctx.font="10px -apple-system,sans-serif";
+  for(let g=0;g<=3;g++){const y=h-padB-(g/3)*(h-padB-padT);ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(w-padR,y);ctx.stroke();}
+  series.forEach(s=>{
+    const mx=maxOf(s.k);
+    ctx.strokeStyle=s.c; ctx.lineWidth=2; ctx.beginPath();
+    H.forEach((x,i)=>{
+      const X=padL+(i/Math.max(1,WEEKS-1))*(w-padL-padR);
+      const Y=h-padB-(x[s.k]/mx)*(h-padB-padT);
+      i?ctx.lineTo(X,Y):ctx.moveTo(X,Y);
+    });
+    ctx.stroke();
+  });
+}
+
+// ---------- 结束 ----------
+function endGame(bankrupt){
+  S.over=true;
+  const investVal=(S.equip*EQUIP_COST+S.deco*DECO_COST)*0.5;
+  const invVal=S.inv*BEAN_COST[S.d.tier]*0.5;
+  const nw=Math.round(S.cash-S.loan+investVal+invVal);
+  let grade,color,note;
+  if(bankrupt){ grade="F · 资金链断裂，咖啡馆倒闭"; color="var(--red)";
+    note="现金为负即倒闭。回顾：是不是人手配太多、营销砸太猛、或者定价压得太低？固定成本（租金¥3,000+人力）每周都在烧钱。"; }
+  else if(nw>=60000){ grade="S · 经营大师"; color="var(--green)";
+    note="你把定位、配人与口碑复利都算明白了。净值 ¥60,000+ 已是这套模型下的顶尖表现。"; }
+  else if(nw>=48000){ grade="A · 优秀操盘"; color="var(--blue)";
+    note="定位清晰、人力匹配。再压一压采购损耗或提前投品质/装修，可以冲 S。"; }
+  else if(nw>=36000){ grade="B · 合格经营"; color="var(--blue)";
+    note="活下来了且小有盈余。检查：员工产能是否喂得饱？营销是否投在递减区间之外？"; }
+  else if(nw>=24000){ grade="C · 勉强维持"; color="var(--orange)";
+    note="没倒闭但也没赚到钱。多半是人力浪费或定价偏离口碑承受力。"; }
+  else { grade="D · 挣扎求生"; color="var(--orange)";
+    note="12 周几乎白干。建议重玩时先定一个小而稳的定位，别同时追低价和高品质。"; }
+
+  $("end-title").textContent=bankrupt?"💥 经营失败":"🎉 12 周经营结束";
+  $("end-grade").textContent=grade; $("end-grade").style.color=color;
+  $("end-nw").textContent=fmt(nw);
+  $("end-cash").textContent=fmt(S.cash)+" / "+fmt(S.loan);
+  $("end-inv2").textContent=fmt(investVal+invVal);
+  $("end-rep").textContent=Math.round(S.rep);
+  $("end-sold").textContent=S.hist.reduce((a,x)=>a+x.sold,0).toLocaleString("zh-CN");
+  const prev=Number(localStorage.getItem(BEST_KEY)||0);
+  if(!bankrupt && nw>prev) localStorage.setItem(BEST_KEY,String(nw));
+  $("end-best").textContent=fmt(Math.max(prev,nw));
+  $("end-note").textContent=note;
+  $("overlay").style.display="flex";
+}
+
+// ---------- 交互 ----------
+$("i-price").oninput=e=>{S.d.price=+e.target.value;$("v-price").textContent=S.d.price;render();};
+$("i-staff").oninput=e=>{S.staff=+e.target.value;$("v-staff").textContent=S.staff;render();};
+$("i-mkt").oninput=e=>{S.d.mkt=+e.target.value;$("v-mkt").textContent=S.d.mkt;render();};
+$("i-buy").oninput=e=>{S.d.buy=+e.target.value||0;$("v-buy").textContent=Math.max(0,Math.round(S.d.buy));render();};
+[...$("i-tier").children].forEach(b=>b.onclick=()=>{
+  S.d.tier=+b.dataset.t;
+  [...$("i-tier").children].forEach(x=>x.classList.toggle("on",x===b));
+  $("v-tier").textContent=BEAN_NAME[S.d.tier]; render();
+});
+$("btn-equip").onclick=()=>{ if(S.equip>=2)return alert("设备已满级"); if(S.cash<EQUIP_COST)return alert("现金不足");
+  S.cash-=EQUIP_COST; S.equip++; render(); };
+$("btn-deco").onclick=()=>{ if(S.deco>=2)return alert("装修已满级"); if(S.cash<DECO_COST)return alert("现金不足");
+  S.cash-=DECO_COST; S.deco++; S.rep=clamp(S.rep+8,0,100); render(); };
+$("btn-borrow").onclick=()=>{ if(S.loan+LOAN_UNIT>LOAN_MAX)return alert("贷款已达上限 ¥30,000");
+  S.cash+=LOAN_UNIT; S.loan+=LOAN_UNIT; render(); };
+$("btn-repay").onclick=()=>{ if(S.loan<=0)return alert("无贷款"); const p=Math.min(LOAN_UNIT,S.loan,S.cash);
+  if(p<=0)return alert("现金不足"); S.cash-=p; S.loan-=p; render(); };
+$("btn-next").onclick=()=>{ if(!S.over) settle(); };
+$("btn-restart").onclick=()=>{ $("overlay").style.display="none"; newGame(); };
+$("btn-again").onclick=()=>{ $("overlay").style.display="none"; newGame(); };
+window.addEventListener("resize",drawChart);
+
+newGame();
+</script>
+
+<style>
+  .guide{position:fixed;inset:0;background:rgba(245,245,247,.96);backdrop-filter:saturate(180%) blur(12px);
+    z-index:90;display:none;align-items:flex-start;justify-content:center;padding:26px 16px;overflow:auto}
+  .guide.show{display:flex}
+  .gcard{background:#fff;border:1px solid var(--line);border-radius:24px;max-width:780px;width:100%;
+    padding:26px 30px 22px;box-shadow:0 24px 70px rgba(0,0,0,.14);margin:auto}
+  .gnav{display:flex;align-items:center;gap:6px;margin-bottom:16px}
+  .gdot{width:7px;height:7px;border-radius:999px;background:#d2d2d7;cursor:pointer;transition:.22s;border:none;padding:0}
+  .gdot.on{background:var(--blue);width:24px}
+  .gcount{margin-left:auto;font-size:12px;color:var(--sub);font-variant-numeric:tabular-nums}
+  .gpage{display:none}
+  .gpage.on{display:block;animation:gIn .26s ease}
+  @keyframes gIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .gtitle{font-size:22px;font-weight:700;letter-spacing:-.4px;margin-bottom:4px}
+  .gsub{font-size:13.5px;color:var(--sub);margin-bottom:14px}
+  .gfig{background:#fafafc;border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin:12px 0 14px}
+  .gfig svg{width:100%;height:auto;display:block}
+  .glist{list-style:none;font-size:14px}
+  .glist li{position:relative;padding:8px 0 8px 24px;border-bottom:1px solid var(--line)}
+  .glist li:last-child{border-bottom:none}
+  .glist li:before{content:"";position:absolute;left:5px;top:17px;width:7px;height:7px;border-radius:50%;background:var(--blue)}
+  .glist li b{font-weight:650}
+  .gtable{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:6px}
+  .gtable td{padding:7px 0;border-bottom:1px solid var(--line)}
+  .gtable td:last-child{text-align:right;font-weight:650;font-variant-numeric:tabular-nums}
+  .gtable tr:last-child td{border-bottom:none}
+  .tip{background:#f0f7ff;border:1px solid #d6e6ff;border-radius:14px;padding:12px 15px;font-size:13.5px;margin-top:12px}
+  .trap{background:#fff5f4;border:1px solid #ffd5d2;border-radius:14px;padding:11px 14px;margin-bottom:9px;font-size:13.5px}
+  .trap b{color:var(--red)}
+  .ok{background:#eefaf1;border:1px solid #cdeed8;border-radius:14px;padding:12px 15px;font-size:13.5px;margin-top:10px}
+  .gfoot{display:flex;align-items:center;gap:10px;margin-top:22px;padding-top:16px;border-top:1px solid var(--line)}
+  .gfoot .sp{flex:1}
+  .gagain{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--sub);cursor:pointer;user-select:none}
+  .gagain input{accent-color:var(--blue);cursor:pointer}
+  .mgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  @media(max-width:640px){.mgrid{grid-template-columns:1fr}}
+  .mcard{background:#fafafc;border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+  .mcard h4{font-size:13.5px;font-weight:650;margin-bottom:5px}
+  .mcard p{font-size:12.5px;color:var(--sub);line-height:1.55}
+  .mcard.see{background:#f0f7ff;border-color:#d6e6ff}
+  .mcard.no{background:#fff5f4;border-color:#ffd5d2}
+  .lever{border:1px solid var(--line);border-radius:14px;padding:11px 14px;margin-bottom:9px;background:#fafafc}
+  .lever h4{font-size:13.5px;font-weight:650;margin-bottom:3px}
+  .lever p{font-size:12.5px;color:var(--sub);line-height:1.55}
+  .lever p em{font-style:normal;color:var(--ink);font-weight:600}
+</style>
+
+<div class="guide" id="guide">
+  <div class="gcard">
+    <div class="gnav">
+      <button class="gdot on" aria-label="第1页"></button><button class="gdot" aria-label="第2页"></button>
+      <button class="gdot" aria-label="第3页"></button><button class="gdot" aria-label="第4页"></button>
+      <button class="gdot" aria-label="第5页"></button><button class="gdot" aria-label="第6页"></button>
+      <span class="gcount" id="g-count">1 / 6</span>
+    </div>
+
+    <!-- P1 -->
+    <div class="gpage on">
+      <div class="gtitle">你是老板，撑过 12 周</div>
+      <div class="gsub">30 秒看懂这局在玩什么</div>
+      <ul class="glist">
+        <li>启动资金 <b>¥20,000</b>，经营 <b>12 周</b>，把<b>期末净值</b>做到最高</li>
+        <li>每周决定 5 件事：<b>定价 · 咖啡豆档位 · 采购量 · 员工数 · 营销投入</b></li>
+        <li>硬规则：<b>现金 &lt; 0 立刻倒闭</b>，没有第二次机会</li>
+        <li>核心取舍：便宜能走量但人力很贵；贵能做毛利但口碑会掉；品质投入是<b>复利</b>，5 周后才见效</li>
+      </ul>
+      <div class="tip">这不是"把每个旋钮拉满"的游戏。五个杠杆互相打架，真正的玩法是<b>先选一个定位，然后让所有杠杆服务于它</b>。又想便宜又想高端，是死得最快的一种死法。</div>
+    </div>
+
+    <!-- P2 -->
+    <div class="gpage">
+      <div class="gtitle">钱从哪来，到哪去</div>
+      <div class="gsub">搞清现金流，你就懂了一半</div>
+      <div class="gfig">
+        <svg viewBox="0 0 680 240" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,PingFang SC,sans-serif">
+          <defs>
+            <marker id="cG" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#248a3d"/></marker>
+            <marker id="cR" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#d70015"/></marker>
+          </defs>
+          <text x="340" y="16" text-anchor="middle" font-size="12.5" fill="#6e6e73" font-weight="600">现金流：钱从哪来，到哪去</text>
+          <rect x="15" y="62" width="155" height="86" rx="14" fill="#eefaf1" stroke="#c6ecd3"/>
+          <text x="92" y="86" text-anchor="middle" font-size="12.5" fill="#248a3d" font-weight="650">现金流入</text>
+          <text x="92" y="110" text-anchor="middle" font-size="11.5" fill="#1d1d1f">营业收入（唯一可持续）</text>
+          <text x="92" y="130" text-anchor="middle" font-size="11.5" fill="#6e6e73">贷款（周转，周息 3%）</text>
+          <rect x="272" y="74" width="136" height="62" rx="14" fill="#f0f7ff" stroke="#b8d9ff"/>
+          <text x="340" y="100" text-anchor="middle" font-size="14" fill="#0071e3" font-weight="700">现金池</text>
+          <text x="340" y="120" text-anchor="middle" font-size="11" fill="#d70015" font-weight="600">现金 &lt; 0 → 倒闭</text>
+          <rect x="515" y="32" width="150" height="176" rx="14" fill="#fff0ef" stroke="#ffd0cc"/>
+          <text x="590" y="54" text-anchor="middle" font-size="12.5" fill="#d70015" font-weight="650">现金流出</text>
+          <text x="590" y="78" text-anchor="middle" font-size="11.5" fill="#1d1d1f">原料 ¥3 / ¥5 / ¥8 每杯</text>
+          <text x="590" y="98" text-anchor="middle" font-size="11.5" fill="#1d1d1f">人力 ¥1,200 / 人 / 周</text>
+          <text x="590" y="118" text-anchor="middle" font-size="11.5" fill="#1d1d1f">租金 ¥3,000 / 周（固定）</text>
+          <text x="590" y="138" text-anchor="middle" font-size="11.5" fill="#1d1d1f">营销投入</text>
+          <text x="590" y="158" text-anchor="middle" font-size="11.5" fill="#1d1d1f">设备 / 装修投资</text>
+          <text x="590" y="178" text-anchor="middle" font-size="11.5" fill="#1d1d1f">贷款利息（周息 3%）</text>
+          <text x="590" y="198" text-anchor="middle" font-size="11.5" fill="#1d1d1f">库存损耗（每周 5%）</text>
+          <line x1="172" y1="105" x2="268" y2="105" stroke="#248a3d" stroke-width="2.5" marker-end="url(#cG)"/>
+          <line x1="410" y1="105" x2="511" y2="105" stroke="#d70015" stroke-width="2.5" marker-end="url(#cR)"/>
+          <text x="340" y="228" text-anchor="middle" font-size="12" fill="#6e6e73">每周雷打不动要付：租金 ¥3,000 + 人力 ¥1,200 × 人数 → 做不出量，就被固定成本拖死</text>
+        </svg>
+      </div>
+      <div class="mgrid">
+        <div class="mcard">
+          <h4>📈 收入只有一个来源</h4>
+          <p>卖咖啡。贷款只是周转工具，周息 3%，借多了利息会吃掉你的利润。</p>
+        </div>
+        <div class="mcard">
+          <h4>🔥 固定成本是敌人</h4>
+          <p>租金 ¥3,000/周 + 人力 ¥1,200/人/周，不管有没有客人都要付。这决定了你必须做出量。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- P3 -->
+    <div class="gpage">
+      <div class="gtitle">口碑：你的复利引擎</div>
+      <div class="gsub">它决定了 5 周后你活得轻松还是挣扎</div>
+      <div class="gfig">
+        <svg viewBox="0 0 680 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,PingFang SC,sans-serif">
+          <defs>
+            <marker id="dG" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#248a3d"/></marker>
+            <marker id="dR" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#d70015"/></marker>
+          </defs>
+          <text x="20" y="18" font-size="12.5" fill="#248a3d" font-weight="650">① 增长飞轮（正循环）</text>
+          <g fill="#eefaf1" stroke="#c6ecd3">
+            <rect x="20" y="32" width="112" height="40" rx="11"/><rect x="142" y="32" width="112" height="40" rx="11"/>
+            <rect x="264" y="32" width="112" height="40" rx="11"/><rect x="386" y="32" width="112" height="40" rx="11"/>
+            <rect x="508" y="32" width="112" height="40" rx="11"/>
+          </g>
+          <g text-anchor="middle" font-size="12.5" fill="#1d6b32" font-weight="600">
+            <text x="76" y="57">品质投入</text><text x="198" y="57">满意度 ↑</text><text x="320" y="57">口碑 ↑</text>
+            <text x="442" y="57">客流 ↑</text><text x="564" y="57">收入 ↑</text>
+          </g>
+          <g stroke="#248a3d" stroke-width="2" marker-end="url(#dG)">
+            <line x1="132" y1="52" x2="140" y2="52"/><line x1="254" y1="52" x2="262" y2="52"/>
+            <line x1="376" y1="52" x2="384" y2="52"/><line x1="498" y1="52" x2="506" y2="52"/>
+          </g>
+          <path d="M 564,72 L 564,96 L 76,96 L 76,74" fill="none" stroke="#248a3d" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#dG)"/>
+          <text x="320" y="91" text-anchor="middle" font-size="11.5" fill="#248a3d">↺ 复利：口碑约 5 周见效，前几周就要定好定位</text>
+          <text x="20" y="140" font-size="12.5" fill="#d70015" font-weight="650">② 死亡螺旋（负循环）</text>
+          <g fill="#fff0ef" stroke="#ffd0cc">
+            <rect x="20" y="154" width="95" height="40" rx="11"/><rect x="125" y="154" width="95" height="40" rx="11"/>
+            <rect x="230" y="154" width="95" height="40" rx="11"/><rect x="335" y="154" width="95" height="40" rx="11"/>
+            <rect x="440" y="154" width="95" height="40" rx="11"/><rect x="545" y="154" width="95" height="40" rx="11"/>
+          </g>
+          <g text-anchor="middle" font-size="12.5" fill="#a30000" font-weight="600">
+            <text x="67" y="179">人手不足</text><text x="172" y="179">排队流失</text><text x="277" y="179">满意度 ↓</text>
+            <text x="382" y="179">口碑 ↓</text><text x="487" y="179">客流 ↓</text><text x="592" y="179">收入 ↓</text>
+          </g>
+          <g stroke="#d70015" stroke-width="2" marker-end="url(#dR)">
+            <line x1="115" y1="174" x2="123" y2="174"/><line x1="220" y1="174" x2="228" y2="174"/>
+            <line x1="325" y1="174" x2="333" y2="174"/><line x1="430" y1="174" x2="438" y2="174"/>
+            <line x1="535" y1="174" x2="543" y2="174"/>
+          </g>
+          <path d="M 592,194 L 592,218 L 67,218 L 67,196" fill="none" stroke="#d70015" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#dR)"/>
+          <text x="330" y="213" text-anchor="middle" font-size="11.5" fill="#d70015">↺ 越穷越请不起人，越请不起人越穷</text>
+        </svg>
+      </div>
+      <ul class="glist">
+        <li><b>口碑每周更新</b>：口碑 +=（满意度 − 50）× 0.2。满意度高于 50 才涨，低于 50 就掉</li>
+        <li><b>满意度 = 50 + 豆档（−8 / +2 / +10）+ 性价比（±15） − 排队惩罚（12）</b></li>
+        <li><b>口碑因子</b>：口碑 50 → 客流 ×1.0；口碑 100 → ×1.4；口碑 0 → ×0.6</li>
+      </ul>
+    </div>
+
+    <!-- P4 -->
+    <div class="gpage">
+      <div class="gtitle">每周的 5 个决策</div>
+      <div class="gsub">每个杠杆：它影响什么，它的代价是什么</div>
+      <div class="lever"><h4>💵 单杯定价 ¥8–40</h4>
+        <p>客流因子 = (18 / 定价)^1.5，钳制 0.25–2.2。参考价 ¥18 → 因子 1.0。<em>越贵客流越少，但单杯毛利越高。</em></p></div>
+      <div class="lever"><h4>🫘 咖啡豆档位 普通 ¥3 / 精品 ¥5 / 顶级 ¥8</h4>
+        <p>客流 ×0.92 / 1.00 / 1.08，满意度 −8 / +2 / +10。<em>品质对客流影响小、对满意度影响大——它是长期复利，不是即时按钮。</em></p></div>
+      <div class="lever"><h4>📦 采购量（杯份）</h4>
+        <p>卖不掉的库存每周损耗 5%，还占用现金。<em>建议值 = 上周需求 × 1.1 − 现有库存，别囤。</em></p></div>
+      <div class="lever"><h4>👥 员工数 1–5 人</h4>
+        <p>产能 300 杯/人/周，¥1,200/人/周。<em>人力是阶梯成本：配多了纯烧钱，配少了排队流失且满意度 −12。</em></p></div>
+      <div class="lever"><h4>📣 营销投入 ¥0–3,000</h4>
+        <p>客流 ×(1 + 0.28 × (1 − e^(−m/1200)))。<em>递减收益：首 ¥1,200 换约 +18% 客流，之后边际骤降。</em></p></div>
+      <div class="tip">每周还有 <b>32% 概率触发随机事件</b>（阴雨 / 网红打卡 / 豆价上涨 / 机器维修等）。事件在<b>决策前</b>就显示，且已计入客流预测——不会暗算你，但你要提前反应。</div>
+    </div>
+
+    <!-- P5 -->
+    <div class="gpage">
+      <div class="gtitle">怎么算赢</div>
+      <div class="gsub">期末净值 = 现金 − 贷款 + 投资残值 50% + 库存残值 50%</div>
+      <table class="gtable">
+        <tr><td style="color:var(--green);font-weight:650">S · 经营大师</td><td>≥ ¥60,000</td></tr>
+        <tr><td style="color:var(--blue);font-weight:650">A · 优秀操盘</td><td>≥ ¥48,000</td></tr>
+        <tr><td style="color:var(--blue);font-weight:650">B · 合格经营</td><td>≥ ¥36,000</td></tr>
+        <tr><td style="color:var(--orange);font-weight:650">C · 勉强维持</td><td>≥ ¥24,000</td></tr>
+        <tr><td style="color:var(--orange);font-weight:650">D · 挣扎求生</td><td>&lt; ¥24,000</td></tr>
+        <tr><td style="color:var(--red);font-weight:650">F · 资金链断裂</td><td>现金为负，倒闭</td></tr>
+      </table>
+      <ul class="glist" style="margin-top:10px">
+        <li><b>别囤现金</b>：设备（产能 +20%/人）和装修（口碑 +8、客流 +5%）是后期必要的现金出口，也是增长手段</li>
+        <li><b>贷款是双刃剑</b>：周息 3%，用来周转可以，用来续命会越陷越深</li>
+      </ul>
+    </div>
+
+    <!-- P6 -->
+    <div class="gpage">
+      <div class="gtitle">三个必踩的坑</div>
+      <div class="gsub">以及三条验证过能活下来的路</div>
+      <div class="trap"><b>坑 1 · 人手配太多。</b>每人每周 ¥1,200 是刚性支出。客流喂不饱产能时，多雇的人就是纯烧钱，还会把你拖向死亡螺旋。</div>
+      <div class="trap"><b>坑 2 · 定位撕裂。</b>又想便宜走量又想高品质：低价压毛利，顶级豆抬成本，两头不讨好，口碑和现金一起掉。</div>
+      <div class="trap"><b>坑 3 · 囤货。</b>每周 5% 损耗，还占着现金——而现金为负直接倒闭。宁可少订 10%，也别多订 50%。</div>
+      <div class="ok">
+        <b>三条活下来的路（都是实测过的净值区间）：</b><br>
+        · <b>精算最优</b>：¥20 / 精品豆 / 2 人 / 0 营销 → 约 ¥62,000，<b>S 档</b><br>
+        · <b>均衡精品</b>：¥18 / 精品豆 / 3 人 / ¥800 → 约 ¥56,000，<b>A 档</b><br>
+        · <b>平价走量</b>：¥12 / 普通豆 / 5 人 / 0 营销 → 约 ¥35,000，<b>B~C 档</b>（必须喂饱产能）<br>
+        <span style="color:var(--sub);font-size:12.5px"><b>心法：先定定位，再配产能，最后才谈营销。</b>五个杠杆不是各自最优，是彼此成全。</span>
+      </div>
+    </div>
+
+    <div class="gfoot">
+      <button class="btn ghost" id="g-close">跳过</button>
+      <label class="gagain"><input type="checkbox" id="g-again"> 下次打开不再自动显示</label>
+      <span class="sp"></span>
+      <button class="btn soft" id="g-prev" style="visibility:hidden">← 上一页</button>
+      <button class="btn" id="g-next">下一页 →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const KEY = "cafe_guide_v1";
+  const box = document.getElementById("guide");
+  const pages = [...box.querySelectorAll(".gpage")];
+  const dots = [...box.querySelectorAll(".gdot")];
+  const prev = document.getElementById("g-prev");
+  const next = document.getElementById("g-next");
+  const cnt = document.getElementById("g-count");
+  let cur = 0;
+
+  function go(i){
+    cur = Math.max(0, Math.min(pages.length - 1, i));
+    pages.forEach((p, k) => p.classList.toggle("on", k === cur));
+    dots.forEach((d, k) => d.classList.toggle("on", k === cur));
+    prev.style.visibility = cur ? "visible" : "hidden";
+    next.textContent = cur === pages.length - 1 ? "开始经营 →" : "下一页 →";
+    cnt.textContent = (cur + 1) + " / " + pages.length;
+    box.scrollTop = 0;
+  }
+  function show(){
+    box.classList.add("show");
+    document.body.style.overflow = "hidden";   // 锁定背景滚动：引导未关闭前不能操作游戏
+    go(0);
+  }
+  function hide(){
+    box.classList.remove("show");
+    document.body.style.overflow = "";
+    const again = document.getElementById("g-again");
+    if (again && again.checked){ try{ localStorage.setItem(KEY, "1"); }catch(e){} }
+  }
+
+  dots.forEach((d, k) => d.onclick = () => go(k));
+  prev.onclick = () => go(cur - 1);
+  next.onclick = () => { if (cur === pages.length - 1) hide(); else go(cur + 1); };
+  document.getElementById("g-close").onclick = hide;
+  /* 点遮罩不关闭：必须浏览完并主动关闭，避免误触跳过 */
+  document.addEventListener("keydown", e => {
+    if (!box.classList.contains("show")) return;
+    if (e.key === "ArrowRight") go(cur + 1);
+    if (e.key === "ArrowLeft") go(cur - 1);
+    if (e.key === "Escape") hide();
+  });
+  document.getElementById("btn-guide").onclick = show;
+  go(0);
+  let seen = "";
+  try{ seen = localStorage.getItem(KEY) || ""; }catch(e){}
+  if (!seen) show();
+})();
+</script>
+</body>
+</html>
